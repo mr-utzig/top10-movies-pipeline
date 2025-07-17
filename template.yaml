@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Top 10 Movies Pipeline - Lambda + SQS + S3
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: python3.11
+
+Resources:
+  GetTop10MoviesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambda_handler
+      CodeUri: get_top_10_movies/
+      Environment:
+        Variables:
+          SQS_QUEUE_URL: !Ref MoviesQueue
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt MoviesQueue.Top10
+
+  EnrichAndStoreFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambda_handler
+      CodeUri: enrich_and_store_movie/
+      Environment:
+        Variables:
+          OMDB_API_KEY: YOUR_OMDB_API_KEY
+          DEST_BUCKET: !Ref EnrichedMoviesBucket
+      Events:
+        SQSTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt MoviesQueue.Arn
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref EnrichedMoviesBucket
+        - SQSPollerPolicy:
+            QueueName: !GetAtt MoviesQueue.Top10
+
+  MoviesQueue:
+    Type: AWS::SQS::Queue
+
+  EnrichedMoviesBucket:
+    Type: AWS::S3::Bucket
+
+Outputs:
+  GetTop10MoviesFunction:
+    Description: "Function to get Top 10 Movies"
+    Value: !Ref GetTop10MoviesFunction
+
+  EnrichAndStoreFunction:
+    Description: "Function to enrich and store movie data"
+    Value: !Ref EnrichAndStoreFunction
+
+  QueueURL:
+    Description: "SQS Queue URL"
+    Value: !Ref MoviesQueue
+
+  BucketName:
+    Description: "S3 Bucket to store enriched data"
+    Value: !Ref EnrichedMoviesBucket
