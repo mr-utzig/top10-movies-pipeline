@@ -14,13 +14,14 @@ This project builds a serverless pipeline to download, enrich, and store the top
 
 ## 📦 Technologies Used
 
-- AWS Lambda  
-- AWS SQS  
-- AWS S3  
-- AWS SAM (Serverless Application Model)  
-- Python 3.11  
-- OMDb API  
-- Boto3 / Requests  
+- AWS Lambda
+- AWS SQS
+- AWS S3
+- AWS EventBridge (scheduling)
+- AWS SAM (Serverless Application Model)
+- Python 3.11
+- OMDb API
+- Boto3 / Requests
 
 ---
 
@@ -70,19 +71,6 @@ sam local invoke EnrichAndStoreFunction \
   --env-vars .env.json
 ```
 > Use .env.example as a base to create .env.json (converted for SAM CLI format).
-
----
-
-## 🗓 Scheduling (Extra)
-
-To run the `GetTop10MoviesFunction` daily:
-
-1. Go to **Amazon EventBridge > Schedules**
-2. Create a new rule
-3. Set the schedule (e.g., once a day at 09:00 UTC)
-4. As the target, select the `GetTop10MoviesFunction` Lambda function
-
-> ⚠️ Avoid scheduling frequent executions to reduce costs.
 
 ---
 
