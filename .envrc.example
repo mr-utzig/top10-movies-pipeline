@@ -1,3 +1,0 @@
-OMDB_API_KEY=your_omdb_api_key
-SQS_QUEUE_URL=https://sqs.REGION.amazonaws.com/ACCOUNT_ID/QUEUE_NAME
-DEST_BUCKET=top10-movies-enriched

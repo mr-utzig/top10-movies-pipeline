@@ -1,0 +1,7 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "top10-movies-pipeline"
+region = "us-east-2"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "OmdbApiKey=your_omdb_api_key"

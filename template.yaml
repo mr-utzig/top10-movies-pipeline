@@ -7,6 +7,12 @@ Globals:
     Timeout: 30
     Runtime: python3.11
 
+Parameters:
+  OmdbApiKey:
+    Type: String
+    Description: OMDb API Key
+    Default: your_omdb_api_key
+
 Resources:
   GetTop10MoviesFunction:
     Type: AWS::Serverless::Function
@@ -18,7 +24,7 @@ Resources:
           SQS_QUEUE_URL: !Ref MoviesQueue
       Policies:
         - SQSSendMessagePolicy:
-            QueueName: !GetAtt MoviesQueue.Top10
+            QueueName: !GetAtt MoviesQueue.QueueName
 
   EnrichAndStoreFunction:
     Type: AWS::Serverless::Function
@@ -27,7 +33,7 @@ Resources:
       CodeUri: enrich_and_store_movie/
       Environment:
         Variables:
-          OMDB_API_KEY: YOUR_OMDB_API_KEY
+          OMDB_API_KEY: !Ref OmdbApiKey
           DEST_BUCKET: !Ref EnrichedMoviesBucket
       Events:
         SQSTrigger:
@@ -38,13 +44,29 @@ Resources:
         - S3CrudPolicy:
             BucketName: !Ref EnrichedMoviesBucket
         - SQSPollerPolicy:
-            QueueName: !GetAtt MoviesQueue.Top10
+            QueueName: !GetAtt MoviesQueue.QueueName
 
   MoviesQueue:
     Type: AWS::SQS::Queue
 
   EnrichedMoviesBucket:
     Type: AWS::S3::Bucket
+
+  DailyScheduler:
+    Type: AWS::Events::Rule
+    Properties:
+      ScheduleExpression: rate(1 day)
+      Targets:
+        - Arn: !GetAtt GetTop10MoviesFunction.Arn
+          Id: GetTop10MoviesFunctionTarget
+
+  PermissionForEventsToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetTop10MoviesFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt DailyScheduler.Arn
 
 Outputs:
   GetTop10MoviesFunction:
