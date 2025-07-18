@@ -19,7 +19,7 @@ def lambda_handler(event, context):
 
         movie['omdb'] = omdb_data
 
-        filename = f\"{movie['id']}_{datetime.utcnow().isoformat()}.json\"
+        filename = f"{movie['id']}_{datetime.utcnow().isoformat()}.json"
         
         s3.put_object(
             Bucket=DEST_BUCKET,

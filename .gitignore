@@ -1,3 +1,4 @@
+.env.json
 .envrc
 .aws-sam
 samconfig.toml
